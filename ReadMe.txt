@@ -50,7 +50,7 @@ a) SHOW VARIABLES LIKE "secure_file_priv";
    copy  the valu path ( /var/lib/mysql-files/ )
 
 go to second terminal
-b) sudo mv /home/ubuntu/database-api3/hive_details.csv /var/lib/mysql-files/
+b) sudo mv /home/ubuntu/database-api4/hive_details.csv /var/lib/mysql-files/
 
 go to first terminal
 c) LOAD DATA INFILE '/var/lib/mysql-files/hive_details.csv'
