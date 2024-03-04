@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, request, json
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow 
-from sqlalchemy import PrimaryKeyConstraint, text, desc, asc, cast, Integer
+from sqlalchemy import PrimaryKeyConstraint, text, desc, asc, cast, Integer, or_
 from flask import request
 from math import ceil
 
@@ -50,18 +50,21 @@ def create_hive_class(business_id, farm_id):
             latitude = db.Column(db.Float, nullable=False)
             total_beehives = db.Column(db.Integer, nullable=False)
             total_active_frames = db.Column(db.Integer, nullable=True)
+            img_urls = db.Column(db.String(255), nullable=True)
+
 
             __table_args__ = (
                 PrimaryKeyConstraint('area_code', 'location_code'),
             )
 
-            def __init__(self, area_code, location_code, longitude, latitude, total_beehives, total_active_frames):
+            def __init__(self, area_code, location_code, longitude, latitude, total_beehives, total_active_frames, img_urls):
                 self.area_code = area_code
                 self.location_code = location_code
                 self.longitude = longitude
                 self.latitude = latitude
                 self.total_beehives = total_beehives
                 self.total_active_frames = total_active_frames
+                self.img_urls = img_urls
 
         # Save the class in the global dictionary
         dynamic_hive_classes[table_name] = Hive
@@ -71,7 +74,7 @@ def create_hive_class(business_id, farm_id):
 
 class HiveSchema(ma.Schema):
     class Meta:
-        fields = ('area_code','location_code','longitude','latitude','total_beehives','Total_Active_frames')
+        fields = ('area_code','location_code','longitude','latitude','total_beehives','img_urls')
 
 Hive_schema = HiveSchema()
 Hives_schema  = HiveSchema(many=True)
@@ -173,7 +176,7 @@ def get_hive_details(business_id, farm_id):
 
         # Retrieve records with optional sorting, search, and pagination
         if search_term:
-            hive_records = Hive.query.filter(Hive.area_code == search_term).order_by(cast(getattr(Hive, sort_field), Integer).desc() if sort_order == 'desc' else cast(getattr(Hive, sort_field), Integer).asc()).offset(offset).limit(limit).all()
+            hive_records = Hive.query.filter(or_(Hive.area_code.like(f'%{search_term}%'))).order_by(cast(getattr(Hive, sort_field), Integer).desc() if sort_order == 'desc' else cast(getattr(Hive, sort_field), Integer).asc()).offset(offset).limit(limit).all()
         else:
             hive_records = Hive.query.order_by(cast(getattr(Hive, sort_field), Integer).desc() if sort_order == 'desc' else cast(getattr(Hive, sort_field), Integer).asc()).offset(offset).limit(limit).all()
 
@@ -256,7 +259,8 @@ def add_hive(business_id, farm_id):
                 longitude=hive_item['longitude'],
                 latitude=hive_item['latitude'],
                 total_beehives=hive_item['total_beehives'],
-                total_active_frames=None  # Set to None for nullable column
+                total_active_frames=None,  # Set to None for nullable column
+                img_urls=None # Set to None for nullable column
             )
 
             db.session.add(new_hive)
@@ -284,7 +288,7 @@ def update_hive(business_id, farm_id, area_code, location_code):
         hive.longitude = _json['longitude']
         hive.latitude = _json['latitude']
         hive.total_beehives = _json['total_beehives']
-
+        hive.img_urls = _json['img_urls']
         db.session.commit()
 
         return jsonify({"message": "Hive updated successfully"})
