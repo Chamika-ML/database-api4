@@ -34,12 +34,13 @@ VALUES
 CREATE TABLE `hive_details_B456_123` (
  `area_code` varchar(20), `location_code` varchar(20),  `longitude` double, 
 `latitude` double, `total_beehives` int(20), `total_active_frames` int(20),
+`img_urls` varchar(255),
 PRIMARY KEY (`area_code`, `location_code`));
 
 
 8. clone the git repo
 open new terminal 
-git clone https://github.com/Chamika-ML/database-api3.git
+git clone https://github.com/Chamika-ML/database-api4.git
 
 
 9. insert hvie_details.csv file data to table
@@ -68,7 +69,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://dilshan:1234@localhost/broodbox
 11. make virtual env for run api
 
 go to second terminal
-cd database-api3
+cd database-api4
 sudo apt-get install python3-venv
 python3 -m venv venv
 source venv/bin/activate

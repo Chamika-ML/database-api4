@@ -1,4 +1,4 @@
-area_code,location_code,longitude,latitude,total_beehives,total_active_frames
+area_code,location_code,longitude,latitude,total_beehives,total_active_frames,img_urls
 1,11422,143.29946,-35.084866,28,248
 1,11139,143.309228,-35.084795,27,250
 1,11315,143.300977,-35.086929,36,306
