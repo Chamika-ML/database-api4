@@ -14,7 +14,7 @@ class Farm(db.Model):
     __tablename__ = 'farm_details'
     business_id = db.Column(db.String(255), autoincrement=False, nullable=False)
     farm_id = db.Column(db.String(255), primary_key=True, autoincrement=False)
-    boundaries = db.Column(db.String(255), nullable=False)
+    boundaries = db.Column(db.Text, nullable=False)
 
 
     def __init__(self, business_id, farm_id, boundaries):
@@ -44,13 +44,13 @@ def create_hive_class(business_id, farm_id):
         class Hive(db.Model): 
             __tablename__ = table_name
             
-            area_code = db.Column(db.String(30), nullable=False)
-            location_code = db.Column(db.String(30), nullable=False)
+            area_code = db.Column(db.String(255), nullable=False)
+            location_code = db.Column(db.String(255), nullable=False)
             longitude = db.Column(db.Float, nullable=False)
             latitude = db.Column(db.Float, nullable=False)
             total_beehives = db.Column(db.Integer, nullable=False)
             total_active_frames = db.Column(db.Integer, nullable=True)
-            img_urls = db.Column(db.String(255), nullable=True)
+            img_urls = db.Column(db.Text, nullable=True)
 
 
             __table_args__ = (
@@ -88,37 +88,49 @@ db.init_app(app)
 
 @app.route('/farm/add', methods=['POST'])
 def add_Farm():
-    _json = request.json
-    business_id = _json['business_id']
-    farm_id = _json['farm_id']
-    boundaries = _json['boundaries']
+    try:
+        _json = request.json
+        business_id = _json['business_id']
+        farm_id = _json['farm_id']
+        boundaries = _json['boundaries']
 
-    new_Farm = Farm(business_id=business_id, farm_id=farm_id, boundaries=boundaries)
-    db.session.add(new_Farm)
-    db.session.commit()
+        new_Farm = Farm(business_id=business_id, farm_id=farm_id, boundaries=boundaries)
+        db.session.add(new_Farm)
+        db.session.commit()
 
-    # Check if the corresponding hive_details table already exists
-    hive_table_name = f"hive_details_{business_id}_{farm_id}"
-    if hive_table_name not in db.metadata.tables:
-        # If the table doesn't exist, create it
-        Hive = create_hive_class(business_id, farm_id)
-        db.create_all()
-    
-    return jsonify({"message": "the Farm has been added "})
+        # Check if the corresponding hive_details table already exists
+        hive_table_name = f"hive_details_{business_id}_{farm_id}"
+        if hive_table_name not in db.metadata.tables:
+            # If the table doesn't exist, create it
+            Hive = create_hive_class(business_id, farm_id)
+            db.create_all()
+        
+        return jsonify({"message": "the Farm has been added "})
+
+    except Exception as e:
+        return jsonify({"error": str(e)})
 
 
 @app.route('/farm', methods=['GET'])
 def get_Farm():
-    Farms = []
-    data = Farm.query.all()
-    Farms = Farms_schema.dump(data)
-    return jsonify(Farms)
+    try:
+        Farms = []
+        data = Farm.query.all()
+        Farms = Farms_schema.dump(data)
+        return jsonify(Farms)
+
+    except Exception as e:
+        return jsonify({"error": str(e)})
 
 @app.route('/farm/<farm_id>', methods=['GET'])
 def Farm_byid(farm_id):
-    farm_record = Farm.query.get(farm_id)
-    data = Farm_schema.dump(farm_record)
-    return jsonify(data)
+    try:
+        farm_record = Farm.query.get(farm_id)
+        data = Farm_schema.dump(farm_record)
+        return jsonify(data)
+
+    except Exception as e:
+        return jsonify({"error": str(e)})
 
 
 @app.route('/farm/delete/<farm_id>', methods=['POST'])
@@ -146,13 +158,17 @@ def delete_Farm(farm_id):
 
 @app.route('/farm/edit/<farm_id>', methods=['POST'])
 def edit_Farm(farm_id):
-    farm_record = Farm.query.get(farm_id)
-    if farm_record is None:
-        return jsonify({"error": "the farm doesn't exist"})
-    _json = request.json
-    farm_record.boundaries = _json['boundaries']
-    db.session.commit()
-    return jsonify({"message": "the Farm has been edited"})
+    try:
+        farm_record = Farm.query.get(farm_id)
+        if farm_record is None:
+            return jsonify({"error": "the farm doesn't exist"})
+        _json = request.json
+        farm_record.boundaries = _json['boundaries']
+        db.session.commit()
+        return jsonify({"message": "the Farm has been edited"})
+        
+    except Exception as e:
+        return jsonify({"error": str(e)})
 
 
 # hive details table related apis
@@ -176,9 +192,21 @@ def get_hive_details(business_id, farm_id):
 
         # Retrieve records with optional sorting, search, and pagination
         if search_term:
-            hive_records = Hive.query.filter(or_(Hive.area_code.like(f'%{search_term}%'))).order_by(cast(getattr(Hive, sort_field), Integer).desc() if sort_order == 'desc' else cast(getattr(Hive, sort_field), Integer).asc()).offset(offset).limit(limit).all()
+            hive_records = Hive.query.filter(
+                or_(
+                    Hive.area_code.like(f'%{search_term}%'),
+                    Hive.location_code.like(f'%{search_term}%')
+                )
+            ).order_by(
+                cast(getattr(Hive, sort_field), Integer).desc() if sort_order == 'desc' else cast(getattr(Hive, sort_field), Integer).asc()
+            ).offset(offset).limit(limit).all()
+  
         else:
-            hive_records = Hive.query.order_by(cast(getattr(Hive, sort_field), Integer).desc() if sort_order == 'desc' else cast(getattr(Hive, sort_field), Integer).asc()).offset(offset).limit(limit).all()
+            hive_records = Hive.query.order_by(
+                cast(getattr(Hive, sort_field), Integer).desc() if sort_order == 'desc' else cast(getattr(Hive, sort_field), Integer).asc()
+            ).offset(offset).limit(limit).all()
+    
+
 
         # Serialize the records using the HiveSchema
         hive_details = Hives_schema.dump(hive_records)

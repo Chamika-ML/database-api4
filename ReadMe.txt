@@ -15,13 +15,12 @@ CREATE DATABASE broodbox;
 CREATE USER 'dilshan'@'localhost' IDENTIFIED BY '1234'; 
 GRANT ALL PRIVILEGES ON broodbox.* TO 'dilshan'@'localhost';
 FLUSH PRIVILEGES;
-EXIT;
 (here 1234 the password of the user)
 
 5.create table
 USE broodbox;
 CREATE TABLE `farm_details` (
- `business_id` varchar(255), `farm_id` varchar(255) PRIMARY KEY, `boundaries` varchar(255));
+ `business_id` VARCHAR(255), `farm_id` VARCHAR(255) PRIMARY KEY, `boundaries` TEXT);
 
 6.insert values
 INSERT INTO `farm_details` (`business_id`, `farm_id`, `boundaries`)
@@ -32,11 +31,10 @@ VALUES
 
 7.create table
 CREATE TABLE `hive_details_B456_123` (
- `area_code` varchar(20), `location_code` varchar(20),  `longitude` double, 
-`latitude` double, `total_beehives` int(20), `total_active_frames` int(20),
-`img_urls` varchar(255),
+ `area_code` VARCHAR(255), `location_code` VARCHAR(255),  `longitude` double, 
+`latitude` double, `total_beehives` int(200), `total_active_frames` int(200),
+`img_urls` TEXT,
 PRIMARY KEY (`area_code`, `location_code`));
-
 
 8. clone the git repo
 open new terminal 
@@ -144,7 +142,8 @@ POST
   "location_code":54321,
   "longitude":1212.3456,
   "latitude":6123.4567,
-  "total_beehives":15000   
+  "total_beehives":15000,
+  "img_urls": "[abc,bbc,ccc]"   
 }
 
 * http://ec2-54-206-119-102.ap-southeast-2.compute.amazonaws.com:5000/hive/delete/B456/123/321456/67534
