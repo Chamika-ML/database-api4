@@ -46,8 +46,8 @@ def create_hive_class(business_id, farm_id):
             
             area_code = db.Column(db.String(255), nullable=False)
             location_code = db.Column(db.String(255), nullable=False)
-            longitude = db.Column(db.Float, nullable=False)
-            latitude = db.Column(db.Float, nullable=False)
+            longitude = db.Column(db.Double, nullable=False)
+            latitude = db.Column(db.Double, nullable=False)
             total_beehives = db.Column(db.Integer, nullable=False)
             total_active_frames = db.Column(db.Integer, nullable=True)
             img_urls = db.Column(db.Text, nullable=True)
